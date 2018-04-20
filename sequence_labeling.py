@@ -16,7 +16,7 @@ def contextwin(l, win):
     it will return a list of list of indexes corresponding
     to context windows surrounding each word in the sentence
     '''
-    
+
     assert win >= 1
     l = list(l)
     # print((int)(win/2))
@@ -55,7 +55,7 @@ def getX(inp, m):
     OOV_count = 0
     token_count = 0
     print(m.matrix.shape[0])
-    #just a oOV word to random
+    # just a oOV word to random
     random_vector = m.matrix.sum(axis=0) / m.matrix.shape[0]
     # random_vector = m.matrix[0]
     for wordList in inp:
@@ -68,7 +68,7 @@ def getX(inp, m):
                 OOV_count += 1
             token_count += 1
             v.append(wv)
-        v = np.array(v).flatten() #2d -> 1d
+        v = np.array(v).flatten()  # 2d -> 1d
         x.append(v)
     print("out of vocabulary rate : %f" % (OOV_count * 1. / token_count))
     print("vocabulary cover rate : %f" %
@@ -142,16 +142,13 @@ def main():
     my_test_inp, my_test_y = getinpOutput(
         test_lex, test_y, options['window'], idx2word)
     my_test_x = getX(my_test_inp, m)
-    
-    
+
     # fit LR classifier
     lrc = LogisticRegression(n_jobs=4, solver='lfbgs')
     lrc.fit(my_train_x, my_train_y)
-    
-    
-    
-    svm = SVC()
-    svm.fit(my_train_x, my_train_y)
+
+    # svm = SVC()
+    # svm.fit(my_train_x, my_train_y)
     # get results
     if task == 'pos':
         score_train = lrc.score(my_train_x, my_train_y)
@@ -165,10 +162,10 @@ def main():
         f1_score_test = f1_score(my_test_y, pred_test, average='weighted')
         print("Training set F1 score: %f" % f1_score_train)
         print("Test set F1 score: %f" % f1_score_test)
-    
-    pred = svm.predict(my_test_x)
-    f1 = f1_score(my_train_y, pred, average='weighted')
-    print("Test score: %f" % f1  )
+
+    # pred = svm.predict(my_test_x)
+    # f1 = f1_score(my_train_y, pred, average='weighted')
+    # print("Test score: %f" % f1  )
 
 
 if __name__ == '__main__':
