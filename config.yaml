@@ -1,6 +1,6 @@
 #path_vectors: ./../../../test/data/embeddings/npy/
 
-path_vectors: C:\\Users\\samar\\Desktop\\ML\\ML_Project\\data\\glove-emb\\50d\\
+path_vectors: C:\\Users\\samar\\Desktop\\ML\\ML_Project\\data\\glove-emb\\100d\\
 path_dataset: C:\\Users\\samar\\Desktop\\ML\\ML_Project\\data\\
-window: 3
+window: 2
 task: ner

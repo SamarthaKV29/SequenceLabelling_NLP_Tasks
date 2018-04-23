@@ -1,11 +1,14 @@
 import os
+# import cProfile, pstats, io
+# pr = cProfile.Profile()
 
 
 def load(path, task):
+    # pr.enable(subcalls=False)
     dicts = {}
     dicts['labels2idx'] = {}
     dicts['words2idx'] = {}
-    
+
     # 3 columns for POS, Chunking, NER.
     if task == 'pos':
         tag_position = 1
@@ -13,7 +16,6 @@ def load(path, task):
         tag_position = 2
     else:
         tag_position = -1
-        
 
     for type in ["train", "test", "valid"]:
         with open(os.path.join(path, type + ".txt"), encoding="utf8") as f:
@@ -51,4 +53,10 @@ def load(path, task):
                 l.append(dicts['labels2idx'][tag])
 
         out[type] = (ww, ll)
+    # pr.disable()
+    # s = io.StringIO()
+    # sortby = 'cumulative'
+    # ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    # ps.print_stats()
+    # print(s.getvalue())
     return out["train"], out["valid"], out["test"], dicts
