@@ -161,7 +161,7 @@ def main():
     mlp = MLPClassifier()
     mlp.partial_fit(my_train_x, my_train_y, np.unique(my_train_y))
     for i in range(epochs):
-        print("Epoch %d " % i)
+        print("Epoch %d " % (i +1))
         mlp.partial_fit(my_train_x, my_train_y)
     # svm = SVC()
     # svm.fit(my_train_x, my_train_y)
