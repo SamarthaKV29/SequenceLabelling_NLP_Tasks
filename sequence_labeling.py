@@ -20,14 +20,14 @@ def contextwin(l, win):
     '''
 
     if win < 1:
-       win = 1
+        win = 1
     l = list(l)
     # print((int)(win/2))
     lpadded = (int)(win) * [0] + l + (int)(win) * [0]
     out = [lpadded[i:i + win * 2 + 1] for i in range(len(l))]
     if len(out) == len(l):
         return out
-    
+
 
 '''
 Get sequence labeling task's inp and output.
@@ -59,7 +59,7 @@ def getX(inp, m):
     # print(m.matrix.shape[0])
     # just a oOV word to random
     random_vector = m.matrix.sum(axis=0) / m.matrix.shape[0]
-    print(random_vector)
+    # print(random_vector)
     # random_vector = m.matrix[0]
     for wordList in inp:
         v = []
@@ -124,7 +124,7 @@ def main():
     # get the dataset
     train_set, valid_set, test_set, dic = load_data.load(
         options['path_dataset'], task)
-    print(len(dic['words2idx']))
+    # print(len(dic['words2idx']))
 
     idx2label = dict((k, v) for v, k in dic['labels2idx'].items())
     idx2word = dict((k, v) for v, k in dic['words2idx'].items())
@@ -179,11 +179,13 @@ def main():
     if task == 'pos':
         train_mlp_score = accuracy_score(my_train_y, mlppredtrain)
         test_mlp_score = accuracy_score(my_test_y, mlppredtest)
-        print("Training MLP score: %f" % train_mlp_score )
+        print("Training MLP score: %f" % train_mlp_score)
         print("Testing MLP score: %f" % test_mlp_score)
-    else: 
-        f1_score_train_mlp = f1_score(my_train_y, mlppredtrain, average='weighted')
-        f1_score_test_mlp = f1_score(my_test_y, mlppredtest, average='weighted')
+    else:
+        f1_score_train_mlp = f1_score(
+            my_train_y, mlppredtrain, average='weighted')
+        f1_score_test_mlp = f1_score(
+            my_test_y, mlppredtest, average='weighted')
 
         print("Training MLP set F1 score: %f" % f1_score_train_mlp)
         print("Test MLP set F1 score: %f" % f1_score_test_mlp)
