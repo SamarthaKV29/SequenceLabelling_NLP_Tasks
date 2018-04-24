@@ -1,7 +1,6 @@
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
-# from sklearn.svm import SVC
 import warnings
 from sklearn.metrics import f1_score
 import sys
@@ -60,6 +59,7 @@ def getX(inp, m):
     # print(m.matrix.shape[0])
     # just a oOV word to random
     random_vector = m.matrix.sum(axis=0) / m.matrix.shape[0]
+    print(random_vector)
     # random_vector = m.matrix[0]
     for wordList in inp:
         v = []
@@ -97,7 +97,7 @@ options = {}
 
 
 def main():
-
+    epochs = 10
     # use ArgumentParser
     # args = parse_args()
     stTime = time.time()
@@ -105,24 +105,23 @@ def main():
     # use yaml
     global options
     path_config = "config.yaml"
-    print("Reading Cnfg")
+
     with open(path_config, "r", encoding='utf-8') as ymlfile:
         cfg = yaml.load(ymlfile)
     options["path_vectors"] = cfg["path_vectors"]
     options["path_dataset"] = cfg["path_dataset"]
     options["window"] = cfg["window"]
     options["task"] = cfg["task"]
-    print("Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
-    print("Loading Model from Glove")
     # get the embeddings
     m = vsmlib.model.load_from_dir(options['path_vectors'])
     # specify the task (can be ner, pos or chunk)
     task = options['task']
-    print("Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
-    print("Prepare the Dataset for task: ", task)
+
     # get the dataset
     train_set, valid_set, test_set, dic = load_data.load(
         options['path_dataset'], task)
+    print(len(dic['words2idx']))
+    cn = 0
 
     idx2label = dict((k, v) for v, k in dic['labels2idx'].items())
     idx2word = dict((k, v) for v, k in dic['words2idx'].items())
@@ -140,8 +139,7 @@ def main():
     vocsize = len(dic['words2idx'])
     nclasses = len(dic['labels2idx'])
     # print(nclasses)
-    print("Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
-    print("Preparing input and output for the classifier")
+
     # get the training and test's inp and output
     my_train_inp, my_train_y = getinpOutput(
         train_lex, train_y, options['window'], idx2word)
@@ -151,7 +149,6 @@ def main():
         test_lex, test_y, options['window'], idx2word)
     print("TEST")
     my_test_x = getX(my_test_inp, m)
-    print("Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
     print("Fitting the MLP NN Classifier")
     # fit LR classifier
     # lrc = LogisticRegression(tol=0.00011,
@@ -159,8 +156,7 @@ def main():
     # lrc.fit(my_train_x, my_train_y)
     mlp = MLPClassifier()
     mlp.partial_fit(my_train_x, my_train_y, np.unique(my_train_y))
-    for i in range(3):
-        print("Fitting %d" % i)
+    for i in range(epochs):
         mlp.partial_fit(my_train_x, my_train_y)
     # svm = SVC()
     # svm.fit(my_train_x, my_train_y)
