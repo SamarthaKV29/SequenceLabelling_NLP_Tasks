@@ -47,9 +47,12 @@ CONLL-2003
 #### Week 2
 5. Creating logistic regression classifier from sklearn.linear_model
 6. Training and testing it with different context width and word vector dimensions
+#### Week 3
 7. Created Linux branch
+#### Week 4
 8. Created mlp classifier
 9. Trained and tested MLP classifer
+#### Week 5
 10. Results:
     - LRC
          - Accuracy: 70-92 %
