@@ -1,9 +1,9 @@
 import numpy as np
-from sklearn.linear_model import LogisticRegression
+#from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 import warnings
 from sklearn.metrics import f1_score
-import sys
+from sklearn.metrics import accuracy_score
 import yaml
 import load_data
 import argparse
@@ -19,15 +19,15 @@ def contextwin(l, win):
     to context windows surrounding each word in the sentence
     '''
 
-    assert win >= 1
+    if win < 1:
+       win = 1
     l = list(l)
     # print((int)(win/2))
     lpadded = (int)(win) * [0] + l + (int)(win) * [0]
     out = [lpadded[i:i + win * 2 + 1] for i in range(len(l))]
-    # print(out)
-    assert len(out) == len(l)
-    return out
-
+    if len(out) == len(l):
+        return out
+    
 
 '''
 Get sequence labeling task's inp and output.
@@ -37,9 +37,9 @@ Get sequence labeling task's inp and output.
 def getinpOutput(lex, y, win, idx2word):
     inp = []
     output = []
-    for i in range(len(lex)):
+    for i in enumerate(lex):
         wordListList = contextwin(lex[i], win)
-        for j in range(len(wordListList)):
+        for j in enumerate(wordListList):
             wordList = wordListList[j]
             realWordList = [idx2word[word] for word in wordList]
             inp.append(realWordList)
@@ -104,10 +104,14 @@ def main():
     TMUL = 60
     # use yaml
     global options
-    path_config = "config.yaml"
+    if len(sys.argv) > 1:
+        path_config = sys.argv[1]
+    else:
+        print("Run command : python3 sequence_labeling.py config.yaml")
+        return
 
     with open(path_config, "r", encoding='utf-8') as ymlfile:
-        cfg = yaml.load(ymlfile)
+        cfg = yaml.safe_load(ymlfile)
     options["path_vectors"] = cfg["path_vectors"]
     options["path_dataset"] = cfg["path_dataset"]
     options["window"] = cfg["window"]
@@ -121,7 +125,6 @@ def main():
     train_set, valid_set, test_set, dic = load_data.load(
         options['path_dataset'], task)
     print(len(dic['words2idx']))
-    cn = 0
 
     idx2label = dict((k, v) for v, k in dic['labels2idx'].items())
     idx2word = dict((k, v) for v, k in dic['words2idx'].items())
@@ -157,6 +160,7 @@ def main():
     mlp = MLPClassifier()
     mlp.partial_fit(my_train_x, my_train_y, np.unique(my_train_y))
     for i in range(epochs):
+        print("Epoch %d " % i)
         mlp.partial_fit(my_train_x, my_train_y)
     # svm = SVC()
     # svm.fit(my_train_x, my_train_y)
@@ -172,14 +176,17 @@ def main():
 
     # print("Training set F1 score: %f" % f1_score_train)
     # print("Test set F1 score: %f" % f1_score_test)
+    if task == 'pos':
+        train_mlp_score = accuracy_score(my_train_y, mlppredtrain)
+        test_mlp_score = accuracy_score(my_test_y, mlppredtest)
+        print("Training MLP score: %f" % train_mlp_score )
+        print("Testing MLP score: %f" % test_mlp_score)
+    else: 
+        f1_score_train_mlp = f1_score(my_train_y, mlppredtrain, average='weighted')
+        f1_score_test_mlp = f1_score(my_test_y, mlppredtest, average='weighted')
 
-    f1_score_train_mlp = f1_score(
-        my_train_y, mlppredtrain, average='weighted')
-    f1_score_test_mlp = f1_score(
-        my_test_y, mlppredtest, average='weighted')
-
-    print("Training MLP set F1 score: %f" % f1_score_train_mlp)
-    print("Test MLP set F1 score: %f" % f1_score_test_mlp)
+        print("Training MLP set F1 score: %f" % f1_score_train_mlp)
+        print("Test MLP set F1 score: %f" % f1_score_test_mlp)
     print("Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
     # pred = svm.predict(my_test_x)
     # f1 = f1_score(my_train_y, pred, average='weighted')
