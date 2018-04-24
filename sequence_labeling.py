@@ -2,6 +2,7 @@ import numpy as np
 #from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 import warnings
+import sys
 from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 import yaml
@@ -37,9 +38,9 @@ Get sequence labeling task's inp and output.
 def getinpOutput(lex, y, win, idx2word):
     inp = []
     output = []
-    for i in enumerate(lex):
+    for i in range(len(lex)):
         wordListList = contextwin(lex[i], win)
-        for j in enumerate(wordListList):
+        for j in range(len(wordListList)):
             wordList = wordListList[j]
             realWordList = [idx2word[word] for word in wordList]
             inp.append(realWordList)

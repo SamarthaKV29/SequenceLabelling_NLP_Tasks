@@ -9,6 +9,11 @@ __pycache__/
 
 # dependencies - data -glove emb
 /data/glove-emb/**
+
+#different config.yaml for linux and win.
+/config.yaml
+
+
 # Distribution / packaging
 .Python
 env/
