@@ -17,8 +17,8 @@ def load(path, task):
     else:
         tag_position = -1
 
-    for type in ["train", "test", "valid"]:
-        with open(os.path.join(path, type + ".txt"), encoding="utf8") as f:
+    for datafile in ["train", "test", "valid"]:
+        with open(os.path.join(path, datafile + ".txt"), encoding="utf8") as f:
             for line in f:
                 if len(line.strip()) is 0:
                     continue
@@ -32,12 +32,12 @@ def load(path, task):
                     dicts['labels2idx'][tag] = len(dicts['labels2idx'])
 
     out = {}
-    for type in ["train", "test", "valid"]:
+    for datafile in ["train", "test", "valid"]:
         w = []
         l = []
         ww = []
         ll = []
-        with open(os.path.join(path, type + ".txt"), encoding="utf8") as f:
+        with open(os.path.join(path, datafile + ".txt"), encoding="utf8") as f:
             for line in f:
                 if len(line.strip()) is 0:
                     if len(w) > 0:
@@ -52,7 +52,7 @@ def load(path, task):
                 w.append(dicts['words2idx'][word])
                 l.append(dicts['labels2idx'][tag])
 
-        out[type] = (ww, ll)
+        out[datafile] = (ww, ll)
     # pr.disable()
     # s = io.StringIO()
     # sortby = 'cumulative'
