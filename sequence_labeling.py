@@ -70,9 +70,10 @@ def getX(inp, m):
         v = np.array(v).flatten()  # 2d -> 1d
         x.append(v)
 
-    print("Out of vocabulary rate is: %f" % (OOV_count * 1. / token_count))
-    print("Vocabulary cover rate is: %f" %
-          ((token_count - OOV_count) * 1. / token_count))
+    print("Out of vocabulary rate is: %f \%" %
+          (OOV_count * 1. / token_count)*100)
+    print("Vocabulary cover rate is: %f \%" %
+          ((token_count - OOV_count) * 1. / token_count)*100)
     return x
 
 
@@ -98,6 +99,10 @@ def main():
     options["window"] = cfg["window"]
     options["task"] = cfg["task"]
     options["algo"] = cfg["algo"]
+    print("Loaded Options:")
+    for k in options:
+        print(k, ": ", options[k])
+    print("--------------------------------------------------------------------------------------")
     # get the word embeddings
     m = vsmlib.model.load_from_dir(options['path_vectors'])
     # specify the task (can be ner, pos or chunk)
