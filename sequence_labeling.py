@@ -70,10 +70,10 @@ def getX(inp, m):
         v = np.array(v).flatten()  # 2d -> 1d
         x.append(v)
 
-    print("Out of vocabulary rate is: %f \%" %
-          (OOV_count * 1. / token_count)*100)
-    print("Vocabulary cover rate is: %f \%" %
-          ((token_count - OOV_count) * 1. / token_count)*100)
+    print("Out of vocabulary rate is: %f percent" %
+          ((OOV_count * 1. / token_count) * 100))
+    print("Vocabulary cover rate is: %f percent" %
+          (((token_count - OOV_count) * 1. / token_count) * 100))
     return x
 
 
