@@ -4,3 +4,4 @@ path_vectors: C:\\Users\\samar\\Desktop\\ML\\ML_Project\\data\\glove-emb\\100d\\
 path_dataset: C:\\Users\\samar\\Desktop\\ML\\ML_Project\\data\\
 window: 1
 task: ner
+algo: LRC

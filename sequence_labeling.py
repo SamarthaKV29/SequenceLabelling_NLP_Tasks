@@ -1,13 +1,8 @@
 import numpy as np
-#from sklearn.linear_model import LogisticRegression
-from sklearn.neural_network import MLPClassifier
 import warnings
 import sys
-from sklearn.metrics import f1_score
-from sklearn.metrics import accuracy_score
 import yaml
 import load_data
-import argparse
 import vsmlib
 import time
 
@@ -81,26 +76,11 @@ def getX(inp, m):
     return x
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--path_vectors', default='./../../../test/data/embeddings/npy/',
-                        help='path to the embeddings')
-    parser.add_argument('--path_dataset', default='./../../../test/data/benchmarks/sequence_labeling/',
-                        help='path to the dataset')
-    parser.add_argument('--window', '-w', default=2, type=int,
-                        help='window size')
-    args = parser.parse_args()
-    return args
-
-
 options = {}
 
 
 def main():
-    epochs = 10
-    # use ArgumentParser
-    # args = parse_args()
+
     stTime = time.time()
     TMUL = 60
     # use yaml
@@ -108,7 +88,7 @@ def main():
     if len(sys.argv) > 1:
         path_config = sys.argv[1]
     else:
-        print("Run command : python3 sequence_labeling.py config.yaml")
+        print("Run command: python3.6 sequence_labeling.py config.yaml")
         return
 
     with open(path_config, "r", encoding='utf-8') as ymlfile:
@@ -117,7 +97,8 @@ def main():
     options["path_dataset"] = cfg["path_dataset"]
     options["window"] = cfg["window"]
     options["task"] = cfg["task"]
-    # get the embeddings
+    options["algo"] = cfg["algo"]
+    # get the word embeddings
     m = vsmlib.model.load_from_dir(options['path_vectors'])
     # specify the task (can be ner, pos or chunk)
     task = options['task']
@@ -125,7 +106,6 @@ def main():
     # get the dataset
     train_set, valid_set, test_set, dic = load_data.load(
         options['path_dataset'], task)
-    # print(len(dic['words2idx']))
 
     idx2label = dict((k, v) for v, k in dic['labels2idx'].items())
     idx2word = dict((k, v) for v, k in dic['words2idx'].items())
@@ -133,12 +113,11 @@ def main():
     train_lex, train_y = train_set
     valid_lex, valid_y = valid_set
     test_lex, test_y = test_set
-    # print(train_y)
 
     # add validation data to training data.
-    # train_lex.extend(valid_lex)
+    train_lex.extend(valid_lex)
     # train_ne.extend(valid_ne)
-    # train_y.extend(valid_y)
+    train_y.extend(valid_y)
 
     vocsize = len(dic['words2idx'])
     nclasses = len(dic['labels2idx'])
@@ -153,47 +132,66 @@ def main():
         test_lex, test_y, options['window'], idx2word)
     print("TEST")
     my_test_x = getX(my_test_inp, m)
-    print("Fitting the MLP NN Classifier")
-    # fit LR classifier
-    # lrc = LogisticRegression(tol=0.00011,
-    #                          class_weight='balanced', multi_class='ovr', random_state=7, max_iter=200)  # n_jobs=-1, solver='sag',
-    # lrc.fit(my_train_x, my_train_y)
-    mlp = MLPClassifier()
-    mlp.partial_fit(my_train_x, my_train_y, np.unique(my_train_y))
-    for i in range(epochs):
-        print("Epoch %d " % (i +1))
-        mlp.partial_fit(my_train_x, my_train_y)
-    # svm = SVC()
-    # svm.fit(my_train_x, my_train_y)
-    # get results
-    print("Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
-    print("Generating Results")
 
-    mlppredtrain = mlp.predict(my_train_x)
-    mlppredtest = mlp.predict(my_test_x)
+    # FIT AND PREDICT
+    if options['algo'] == "MLP":
 
-    # f1_score_train = f1_score(my_train_y, pred_train, average='weighted')
-    # f1_score_test = f1_score(my_test_y, pred_test, average='weighted')
+        from sklearn.neural_network import MLPClassifier
+        epochs = 10
+        print("Fitting the MLP NN Classifier")
+        mlp = MLPClassifier()
+        mlp.partial_fit(my_train_x, my_train_y, np.unique(my_train_y))
+        for i in range(epochs):
+            # print("Epoch %d " % (i + 1))
+            mlp.partial_fit(my_train_x, my_train_y)
 
-    # print("Training set F1 score: %f" % f1_score_train)
-    # print("Test set F1 score: %f" % f1_score_test)
-    if task == 'pos':
-        train_mlp_score = accuracy_score(my_train_y, mlppredtrain)
-        test_mlp_score = accuracy_score(my_test_y, mlppredtest)
-        print("Training MLP score: %f" % train_mlp_score)
-        print("Testing MLP score: %f" % test_mlp_score)
-    else:
-        f1_score_train_mlp = f1_score(
-            my_train_y, mlppredtrain, average='weighted')
-        f1_score_test_mlp = f1_score(
-            my_test_y, mlppredtest, average='weighted')
+        print("Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
+        print("Generating Results")
 
-        print("Training MLP set F1 score: %f" % f1_score_train_mlp)
-        print("Test MLP set F1 score: %f" % f1_score_test_mlp)
-    print("Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
-    # pred = svm.predict(my_test_x)
-    # f1 = f1_score(my_train_y, pred, average='weighted')
-    # print("Test score: %f" % f1  )
+        mlppredtrain = mlp.predict(my_train_x)
+        mlppredtest = mlp.predict(my_test_x)
+        from sklearn.metrics import f1_score
+        from sklearn.metrics import accuracy_score
+        if task == 'pos':
+            train_mlp_score = accuracy_score(my_train_y, mlppredtrain)
+            test_mlp_score = accuracy_score(my_test_y, mlppredtest)
+            print("MLP Training score: %f" % train_mlp_score)
+            print("MLP Testing score: %f" % test_mlp_score)
+        else:
+            f1_score_train_mlp = f1_score(
+                my_train_y, mlppredtrain, average='weighted')
+            f1_score_test_mlp = f1_score(
+                my_test_y, mlppredtest, average='weighted')
+            print("MLP Training set F1 score: %f" % f1_score_train_mlp)
+            print("MLP Test set F1 score: %f" % f1_score_test_mlp)
+
+    elif options['algo'] == "LRC":
+        from sklearn.linear_model import LogisticRegression
+        print("Fitting the LRC Classifier")
+        # fit LR classifier
+        # PARAMS: tol=0.00011, class_weight='balanced', multi_class='ovr', random_state=7, max_iter=200
+        lrc = LogisticRegression()  # n_jobs=-1, solver='sag',
+        lrc.fit(my_train_x, my_train_y)
+        print("Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
+        print("Generating Results")
+        from sklearn.metrics import f1_score
+        from sklearn.metrics import accuracy_score
+        if task == 'pos':
+            score_train = lrc.score(my_train_x, my_train_y)
+            score_test = lrc.score(my_test_x, my_test_y)
+            print("Training LRC score: %f" % score_train)
+            print("Testing LRC score: %f" % score_test)
+        else:
+            pred_train = lrc.predict(my_train_x)
+            pred_test = lrc.predict(my_test_x)
+            f1_score_train = f1_score(
+                my_train_y, pred_train, average='weighted')
+            f1_score_test = f1_score(
+                my_test_y, pred_test, average='weighted')
+            print("LRC Training set F1 score: %f" % f1_score_train)
+            print("LRC Test set F1 score: %f" % f1_score_test)
+
+    print("Total Time Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
 
 
 if __name__ == '__main__':
