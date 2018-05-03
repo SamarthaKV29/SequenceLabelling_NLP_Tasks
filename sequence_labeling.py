@@ -80,25 +80,31 @@ def getX(inp, m):
 options = {}
 
 
-def main():
-
+def main(conf):
+    warnings.filterwarnings(action='ignore', category=DeprecationWarning)
     stTime = time.time()
     TMUL = 60
     # use yaml
     global options
-    if len(sys.argv) > 1:
-        path_config = sys.argv[1]
-    else:
-        print("Run command: python3.6 sequence_labeling.py config.yaml")
-        return
+    # if len(sys.argv) > 1:
+    #     path_config = sys.argv[1]
+    # else:
+    #     print("Run command: python3.6 sequence_labeling.py config.yaml")
+    #     return
 
-    with open(path_config, "r", encoding='utf-8') as ymlfile:
-        cfg = yaml.safe_load(ymlfile)
+    # with open(path_config, "r", encoding='utf-8') as ymlfile:
+    #
+    cfg = yaml.safe_load(open(conf, "r"))
+
     options["path_vectors"] = cfg["path_vectors"]
     options["path_dataset"] = cfg["path_dataset"]
     options["window"] = cfg["window"]
     options["task"] = cfg["task"]
     options["algo"] = cfg["algo"]
+    origSTDOUT = sys.stdout
+    outf = open("out.txt", "a")
+    sys.stdout = outf
+
     print("Loaded Options:")
     for k in options:
         print(k, ": ", options[k])
@@ -155,6 +161,9 @@ def main():
 
         mlppredtrain = mlp.predict(my_train_x)
         mlppredtest = mlp.predict(my_test_x)
+        for i, j in zip(mlppredtest, my_test_y):
+            if (i != j):
+                print(i, j)
         from sklearn.metrics import f1_score
         from sklearn.metrics import accuracy_score
         if task == 'pos':
@@ -179,6 +188,7 @@ def main():
         lrc.fit(my_train_x, my_train_y)
         print("Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
         print("Generating Results")
+
         from sklearn.metrics import f1_score
         from sklearn.metrics import accuracy_score
         if task == 'pos':
@@ -197,8 +207,27 @@ def main():
             print("LRC Test set F1 score: %f" % f1_score_test)
 
     print("Total Time Elapsed: %f mins" % ((time.time() - stTime)/TMUL))
+    sys.stdout = origSTDOUT
+    outf.close()
 
 
-if __name__ == '__main__':
-    warnings.filterwarnings(action='ignore', category=DeprecationWarning)
-    main()
+# import os
+# deflt = os.getcwd() + "\config.yaml"
+
+# print(deflt)
+# main(deflt)
+
+# if __name__ == '__main__':
+#     main(def)
+import os
+from os import listdir
+from os.path import isfile, join
+files = [os.getcwd() + "/configs/" + f for f in listdir(
+    os.getcwd() + "/configs/")]
+print("TOTAL Tests:", len(files))
+i = 0
+for conf in files:
+    i += 1
+    print("Processing File %d " % i)
+    print(conf)
+    main(conf)
