@@ -1,4 +1,4 @@
-# Error Analysis while performing Sequence Labelling for NLP Tasks
+# Comparision based approach to Sequence Labelling for NLP Tasks
 
 ## DESCRIPTION
 ### Goal
@@ -18,6 +18,25 @@ We compare two different Machine Learning approaches and their performance and a
 - Metric: F1 score
 ### APPROACH 
 We use two machine learning algorithms, namely Multinomial [Logistic Regression](http://scikit-learn.org/stable/modules/linear_model.html#logistic-regression) and [Multi-Layer Perceptron](http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html#sklearn.neural_network.MLPClassifier), to bring out the differences in performance and accuracy. We check the system for Sequence labeling task over the CONLL-2003 Shared Task English language dataset, to train and test the system. The main goal of this experiment is to perform error analysis and populate the scores over some of the more common tasks of NLP, such as Named Entity Recognition, Parts-Of-Speech Tagging and Chunking. Our dataset is in the form of “WORD NER-tag POS-tag Chunking-tag”. We use the external library vsmlib written in python 3.6 to process the pretrained vectors derived from the [Glove](https://nlp.stanford.edu/projects/glove/), load the model and process all the vocabulary. 
+Basic approach – Window based concatenation of Word embeddings
+1.	Primarily, the program begins by loading the options from the config.yaml. We used a configuration yaml because we want to experiment with different tasks and our system processes the correct column from the dataset depending on the specific task, whether it is NER, POS or chunking. The yaml loader returns a python object, stored into “options” object for use throughout the program. The config file needs to be configured with the following fields:
+path_vectors	Path to word vectors such as GloVe
+path_dataset	Path to the dataset on disk
+window	Context window length for current trial – 1 through 5
+task	Task to be considered out of NER/POS or chunking
+algorithm	Machine Learning algorithm to be used – LRC or MLP
+Table 2 – Describing the configuration values
+The algorithm specific parameters need to be hardcoded at this point.
+2.	Next, our system loads the word embedding model from the path, i.e. GloVe word embeddings. We used the method
+vsmlib.model.load_from_dir(options[‘path_vectors’])
+to load the model, as shown above.
+3.	Then, the task is acquired and set from the options[‘task’]. 
+4.	Further, we use the load_data.load() method to load our data and the corresponding values from the labels column depending on the task. This results in the generation of train_set, test_set, valid_set and dic. These sets represent words and their corresponding labels from the task column. These need to be further processed to reflect word embeddings and vectors. The dic holds two dictionary objects, one for word-to-index and other for label-to-index. 
+5.	Then, we use the getinpOutput() method to generate the word ids or indices to context window lists. 
+6.	The next method getX() is used to convert these lists of context windows into word embeddings from those lists of indices. 
+7.	We do this for both the training and testing dataset and to simplify our task, we have extended the training set to include the validation set as well.
+8.	Next, depending on the algorithm specified in config, we use either MLP classifier or LR classifier to fit and predict on the training and testing dataset.
+
 ### DATASET
 CONLL-2003 
 ### LEARNING ALGORITHM
